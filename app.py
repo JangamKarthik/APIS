@@ -10,7 +10,7 @@ model = load_model('skin1.h5')
 
 target_size = (128, 128)
 
-@app.route("/", methods=["POST"])
+@app.route("/")
 def new():
     return 'Hello World!'
 
