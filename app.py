@@ -10,11 +10,7 @@ model = load_model('skin1.h5')
 
 target_size = (128, 128)
 
-@app.route("/")
-def new():
-    return 'Hello World!'
-
-@app.route("/classify", methods=["POST"])
+@app.route("/", methods=["POST"])
 def main():
     try:
         if 'image' in request.files:
