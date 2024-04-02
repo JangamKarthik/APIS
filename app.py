@@ -3,6 +3,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
 import io
+from tensorflow.keras.preprocessing.image import img_to_array, load_img
 
 app = Flask(__name__)
 
@@ -18,23 +19,30 @@ def main():
 
             image_content = image_file.read()
 
+
             img = image.load_img(io.BytesIO(image_content), target_size=target_size)
-            img_array = image.img_to_array(img)
+            img_array = img_to_array(img)
             img_array = np.expand_dims(img_array, axis=0)
-            img_array /= 255.0  
+            preds = model.predict(img_array)
 
-            predictions = model.predict(img_array)
+            i = np.argmax(preds[0])
+            label_to_class = {'Actinic keratosis': 0,
+                      'Basal cell carcinoma': 1,
+                      'Benign keratosis': 2,
+                      'Dermatofibroma': 3,
+                      'Melanocytic nevus':4,
+                      'Melanoma':5,
+                      'Squamous cell carcinoma':6,
+                      'Vascular lesion':7}
 
-            class_index = np.argmax(predictions)
-            confidence = predictions[0][class_index]
+            class_to_label = {v: k for k, v in label_to_class.items()}
 
-            class_names = ['Actinic keratosis','Basal cell carcinoma','Benign keratosis', 'Dermatofibroma','Melanocytic nevus', 'Melanoma' ,'Squamous cell carcinoma','Vascular lesion']
-            predicted_class = class_names[class_index]
+            label = class_to_label[i]
 
 
             response = {
-                'class': predicted_class,
-                'confidence': float(confidence)
+                'class': label,
+                'Probability': max(preds[0]) * 100
             }
 
             return jsonify(response)
@@ -46,4 +54,4 @@ def main():
         return {"error": str(e)}
 
 if __name__ == "__main__":
-    app.run("0.0.0.0", debug=False)
+    app.run("0.0.0.0", debug=True)
